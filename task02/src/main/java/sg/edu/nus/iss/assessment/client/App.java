@@ -4,6 +4,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
@@ -24,12 +26,10 @@ public class App {
             sock = new Socket(connInfo[0], Integer.parseInt(connInfo[1]));
         
             InputStream is = sock.getInputStream();
-            DataInputStream dis = new DataInputStream(is);
+            //DataInputStream dis = new DataInputStream(is);
+            ObjectInputStream dis = new ObjectInputStream(is);
 
-            OutputStream os = sock.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-
-            String response = dis.readUTF();
+            String response = (String)dis.readObject();
             System.out.println(response);
             String[] splittedResult = response.split(" ");
             requestId = splittedResult[0];
@@ -41,11 +41,21 @@ public class App {
             average = totalSum / howManynos;
             System.out.println(average);
 
-            dos.writeUTF(requestId);
-            dos.writeUTF(name);
-            dos.writeUTF(email);
-            dos.writeFloat(average);
-            boolean isOk = dis.readBoolean();
+            OutputStream os = sock.getOutputStream();
+            //DataOutputStream dos = new DataOutputStream(os);
+            ObjectOutputStream dos = new ObjectOutputStream(os);
+
+            // dos.writeUTF(requestId);
+            // dos.writeUTF(name);
+            // dos.writeUTF(email);
+            // dos.writeFloat(average);
+            dos.writeObject(requestId);
+            dos.writeObject(name);
+            dos.writeObject(email);
+            dos.writeObject(average);
+            
+            
+            Boolean isOk = (Boolean)dis.readObject();
             System.out.println(isOk);
             if(isOk){
                 System.out.println("SUCCESS");
@@ -54,6 +64,9 @@ public class App {
             }
             sock.close();
         } catch (NumberFormatException | IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

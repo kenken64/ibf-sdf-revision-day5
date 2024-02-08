@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -31,18 +33,26 @@ public class App {
             pattern = Pattern.compile(EMAIL_PATTERN);
             
             socket = serverSocket.accept();
-            is = socket.getInputStream();
-            DataInputStream dis = new DataInputStream(is);
-
+            
             os = socket.getOutputStream();
-            DataOutputStream dos =new DataOutputStream(os);
-            dos.writeUTF("1234abcd 97,35,82,2,45");
+            ObjectOutputStream dos =new ObjectOutputStream(os);
+            dos.writeObject("1234abcd 97,35,82,2,45");
+
+            is = socket.getInputStream();
+            //DataInputStream dis = new DataInputStream(is);
+            ObjectInputStream dis = new ObjectInputStream(is);
+
             while(true){
+                
                 try{
-                    String requestId = dis.readUTF();
-                    String name = dis.readUTF();
-                    String email = dis.readUTF();
-                    float average = dis.readFloat();
+                    // String requestId = dis.readUTF();
+                    // String name = dis.readUTF();
+                    // String email = dis.readUTF();
+                    // float average = dis.readFloat();
+                    String requestId = (String)dis.readObject();
+                    String name = (String)dis.readObject();
+                    String email = (String)dis.readObject();
+                    Float average = (Float)dis.readObject();
                     System.out.println("Request Id: " + requestId);
                     System.out.println("Name: " + name);
                     System.out.println("Email: " + email);
@@ -52,12 +62,15 @@ public class App {
                     boolean isEmailOk = matcher.matches();
                     System.out.println(isEmailOk);
                     if(average != 52.2f  || isEmailOk == false){
-                        dos.writeBoolean(false);
+                        dos.writeObject(false);
                     }else{
-                        dos.writeBoolean(true);
+                        dos.writeObject(true);
                     }
                 }catch(EOFException e){
                     break;
+                } catch (ClassNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {
