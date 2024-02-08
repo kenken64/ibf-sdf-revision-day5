@@ -3,6 +3,10 @@ package sg.edu.nus.iss.assessment;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,6 +32,7 @@ public class App
 
         try {
             String templateContent = readMailMergeText(templateFile);
+            System.out.println(templateContent);
             for(Mailmerge m : merges){
                 String fn = m.getFirstName();
                 String addr= m.getAddress().replace("\\n", "\n");;
@@ -47,15 +52,15 @@ public class App
         
     }
 
-    private static synchronized String readMailMergeText(String mailmergeFile) throws IOException{
-        BufferedReader br = new BufferedReader(new FileReader(mailmergeFile));
+    private static synchronized String readMailMergeText(String mailmergeFile) 
+        throws IOException{
+        Path path = Paths.get(mailmergeFile);
+        List<String> allLines = Files
+                            .readAllLines(path, StandardCharsets.UTF_8);
         StringBuilder strBuilder = new StringBuilder();
-        String line;
-        while((line = br.readLine()) != null){
-            //process the line
+        for(String line : allLines){
             strBuilder.append(line);
         }
-        br.close();
         return strBuilder.toString();
     }
 
